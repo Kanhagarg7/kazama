@@ -46,7 +46,7 @@ async def watch_edits(chat, msg_id, timeout=16):
     async with kanha_bot.conversation(chat, timeout=timeout) as conv:
         func = lambda e: e.id == msg_id and search(
             rf"(?i)Current turn: (.+){kanha_bot.uid}", e.message.text
-        )
+        ) or "Daily limit" in e.text
         response = conv.wait_event(
             MessageEdited(
                 incoming=True,
@@ -116,6 +116,8 @@ async def main(e, other_usr):
     while True:
         response = await watch_edits(e.chat_id, hexa_response.id)
         if isinstance(response, Message):
+            if "Daily limit" in response.text:
+            	return "stop"
             resp = await do_click(response, 0, 0)
             if resp == True:
                 return
@@ -167,7 +169,10 @@ async def autohexa(e):
     success = 0
     for _ in range(1, count):
         try:
-            await main(domt, other_usr)
+            a = await main(domt, other_usr)
+            if a == "stop":
+            	#await e.respond("Daily limit ho gya stop kar rha iski maka")
+            	break
         except asyncio.TimeoutError:
             await domt.reply(f"Got Timeout Error.. Stopping run #{_}")
             continue
