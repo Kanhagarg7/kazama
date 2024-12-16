@@ -1,3 +1,4 @@
+from . import *
 import asyncio
 from telethon import TelegramClient, events
 import re
