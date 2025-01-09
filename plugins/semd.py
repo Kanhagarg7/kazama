@@ -1,16 +1,34 @@
-
 # < Source - t.me/testingpluginnn >
 # < https://github.com/TeamUltroid/Ultroid >
 
 """
-✘ Send any Installed Plugin to the Chat!
+✘ **Send any Installed Plugin to the Chat!**
 
->> Use : {i}semd <plugin_name>
+>> Use : `{i}semd <plugin_name>`
 """
 
 import os
 
 from . import *
+async def get_paste(data: str, extension: str = "txt"):
+    ssl_context = ssl.create_default_context(cafile=certifi.where())
+    json = {"content": data, "extension": extension}
+    key = await async_searcher(
+        url="https://spaceb.in/api/",
+        json=json,
+        ssl=ssl_context,
+        post=True,
+        re_json=True,
+    )
+    try:
+        return True, key["payload"]["id"]
+    except KeyError:
+        if "the length must be between 2 and 400000." in key["error"]:
+            return await get_paste(data[-400000:], extension=extension)
+        return False, key["error"]
+    except Exception as e:
+        LOGS.info(e)
+        return None, str(e)
 
 
 def send(fn):
@@ -51,14 +69,14 @@ async def semd_plugin(ult):
     repo = "https://github.com/TeamUltroid/Ultroid"
     args = ult.pattern_match.group(1)
     if not args:
-        return await ult.eod("Give a plugin name too")
+        return await ult.eod("`Give a plugin name too`")
 
-    eris = await ult.eor("...")
+    eris = await ult.eor("`...`")
     path = send(args)
     if not path:
         path = alt_send(args)
     if not path:
-        return await eris.edit(f"No plugins were found for: {args}")
+        return await eris.edit(f"No plugins were found for: `{args}`")
 
     paste = await pastee(path)
     caption = f"<b>>> </b><code>{path}</code> \n{paste} \n" \
@@ -67,7 +85,7 @@ async def semd_plugin(ult):
         await ult.client.send_file(
             ult.chat_id, path,
             caption=caption, parse_mode="html",
-            thumb="resources/extras/kanha.jpg",
+            thumb=ULTConfig.thumb,
             silent=True, reply_to=ult.reply_to_msg_id,
         )
         await eris.delete()
