@@ -116,20 +116,100 @@ async def autohemxa(e):
         LOGS.exception(exc)
         await msg.respond(f"**2nd ID Error** \n\nGot {exc.__class__} \n`{exc}`")
 
-@kanha_bot.on(events.NewMessage( incoming=True))
-async def x(event) :
-  chat = "HeXamonbot"
-  if "done.click.team1" in event.raw_text :
-    async with kanha_bot.conversation(chat) as conv :
-      await conv.send_message("/myteam")
-      await asyncio.sleep(2)
-      a = await conv.get_response()
-      if a :
-        await a.click(text = 'Team 2')
-      if not a :
-        await conv.send_message("/myteam")
-      await event.respond(a)
-      await asyncio.sleep(2)
-      b = await conv.get_response()
-      if b :
-        await b.click(text = 'Team 2')
+from telethon import events
+import asyncio
+
+@kanha_bot.on(events.NewMessage(incoming=True))
+async def x(event):
+    chat = "HeXamonbot"
+
+    if "✅ Successfully loaded Team 1!" in event.raw_text:
+        retries = 3  # Max retries for /myteam
+        delay = 5  # Delay between retries
+        click_attempts = 5  # Click button up to 5 times
+        click_delay = 4  # Delay between clicks
+
+        response = None
+        # Notify user
+
+        # **Step 1: Fetch /myteam Response**
+        for attempt in range(retries):
+            async with kanha_bot.conversation(chat, timeout=20) as conv:
+                try:
+                    await conv.send_message("/myteam")
+                    print(f"Attempt {attempt+1}: Sent /myteam")  # DEBUG LOG
+
+                    response = await conv.get_response(timeout=10)
+                    print(f"Response received: {response.text}")  # DEBUG LOG
+
+                    if response.buttons:
+                        break  # **Valid response received, stop retrying**
+                    else:
+                        print("No buttons found, retrying...")  # DEBUG LOG
+                        await asyncio.sleep(delay)
+
+                except asyncio.TimeoutError:
+                    print("Timeout: No response received")  # DEBUG LOG
+                    if attempt < retries - 1:
+                        await asyncio.sleep(delay)
+                    else:
+                        await event.respond("⚠️ Bot did not respond after multiple attempts. Try again later.")
+                        return  # **Exit function if no response**
+
+        if response is None:
+            return  # Stop if no response
+
+        # **Step 2: Click 'Team 2' Button up to 5 Times**
+        final_response = None
+      # Notify user
+
+        try:
+            for i in range(click_attempts):
+                # Extract button list
+                buttons = response.buttons
+                team2_button = None
+
+                # Find the "Team 2" button
+                for row in buttons:
+                    for button in row:
+                        if button.text == "Team 2":
+                            team2_button = button
+                            break
+                    if team2_button:
+                        break
+
+                if team2_button is None:
+                    print("Team 2 button not found.")  # DEBUG LOG
+                    await event.respond("⚠️ Couldn't find 'Team 2' button. Try manually.")
+                    return
+
+                # Click the "Team 2" button
+                click_result = await team2_button.click()
+
+                # **Check if it's an alert (BotCallbackAnswer)**
+                if hasattr(click_result, "message"):
+                    alert_text = click_result.message  # Alert message
+                    print(f"Alert received: {alert_text}")  # DEBUG LOG
+                  # Send alert to user
+
+                    # **Stop clicking if alert says "Loaded Team 2"**
+                    if "Loaded team 2" in alert_text:
+                        print("✅ Loaded Team 2 - Stopping clicks.")  # DEBUG LOG
+                        await event.respond("✅ Successfully loaded Team 2!")
+                        break  # **Stop clicking**
+
+                print(f"Clicked 'Team 2' button ({i+1}/{click_attempts})")  # DEBUG LOG
+                await asyncio.sleep(click_delay)
+
+            # **Wait for the final response from the bot**
+            final_response = await kanha_bot.get_messages(chat, limit=1)
+
+        except Exception as e:
+            print(f"❌ Failed to click Team 2: {e}")  # DEBUG LOG
+            await event.respond("⚠️ Couldn't select Team 2. Try manually.")
+            return
+
+        # **Step 3: Send Final Response to the Original Chat**
+        if final_response:
+            await event.respond(final_response[0].text)
+            print("✅ Sent final response to original chat")  # DEBUG LOG
