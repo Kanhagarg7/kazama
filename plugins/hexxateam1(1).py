@@ -131,15 +131,16 @@ from telethon import events
 async def autohexa(e):
     chat = e.chat_id
     retries = 3  # Max retries for /myteam
-    retry_delay = 5  # Delay between retries
-    click_attempts = 5  # Max clicks for "Team 1"
+    delay = 5  # Delay between retries
+    click_attempts = 5  # Click button up to 5 times
     click_delay = 4  # Delay between clicks
 
     response = None
+        # Notify user
 
-    # **Step 1: Fetch /myteam Response with Retries**
-    async with kanha_bot.conversation(chat, timeout=30) as conv:
-        for attempt in range(retries):
+        # **Step 1: Fetch /myteam Response**
+    for attempt in range(retries):
+        async with kanha_bot.conversation(chat, timeout=20) as conv:
             try:
                 await conv.send_message("/myteam")
                 print(f"Attempt {attempt+1}: Sent /myteam")  # DEBUG LOG
@@ -151,16 +152,18 @@ async def autohexa(e):
                     break  # **Valid response received, stop retrying**
                 else:
                     print("No buttons found, retrying...")  # DEBUG LOG
-                    await asyncio.sleep(retry_delay)
+                    await asyncio.sleep(delay)
 
             except asyncio.TimeoutError:
                 print("Timeout: No response received")  # DEBUG LOG
                 if attempt < retries - 1:
-                    await asyncio.sleep(retry_delay)
+                    await asyncio.sleep(delay)
                 else:
-                    await e.respond("⚠️ Bot did not respond after multiple attempts. Stopping execution.")
+                    await event.respond("⚠️ Bot did not respond after multiple attempts. Try again later.")
                     await kanha_bot.send_message("teamkanha", "battle ruk gya")
                     return  # **Exit function if no response**
+    # **Step 1: Fetch /myteam Response with Retries**
+    
 
     if response is None or not response.buttons:
         await e.respond("⚠️ Couldn't get a valid response from `/myteam`. Stopping execution.")
