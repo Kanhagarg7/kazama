@@ -10,8 +10,7 @@ RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 COPY installer.sh .
 
-RUN bash installer.sh
-
+RUN pip install -r req*
 
 # start the bot.
 CMD ["bash", "startup"]
