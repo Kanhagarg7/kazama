@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
-#!/bin/bash
+# Ultroid - UserBot
+# Copyright (C) 2021-2025 TeamUltroid
+#
+# This file is a part of < https://github.com/TeamUltroid/Ultroid/ >
+# PLease read the GNU Affero General Public License in <https://www.github.com/TeamUltroid/Ultroid/blob/main/LICENSE/>.
+
 
 echo "
             ┏┳┓╋┏┓╋╋╋╋┏┓┏┓
@@ -7,31 +12,8 @@ echo "
             ┃┃┃┗┫┏┫┏┫╋┃┃╋┃
             ┗━┻━┻━┻┛┗━┻┻━┛
 
-      Visit @Thekanha for updates!!
+      Visit @TheUltroid for updates!!
+
 "
-
-# Load environment variables from .env file if it exists
-if [ -f .env ] ; then  
-    set -o allexport; 
-    source .env; 
-    set +o allexport; 
-fi
-
-# Get current time in IST format (e.g., "12 May 2025 02:30 PM")
-time_in_ist=$(TZ="Asia/Kolkata" date +"%d %b %Y %I:%M %p")
-
-# Connect to Redis and set the "time" key with the current time
-if [ "$REDIS_URI" ] && [ "$REDIS_PASSWORD" ]; then
-    redis-cli -u $REDIS_URI -a $REDIS_PASSWORD SET time "$time_in_ist"
-    echo "Time set in Redis: $time_in_ist"
-else
-    echo "Redis URI or password is missing!"
-fi
-
-# Original condition for running either main.py or pykanha
-if [ $SESSION1 ] ; then 
-    wget -O main.py https://gist.githubusercontent.com/Kanhagarg7/9ecfa4d70c77649a720f6b6d8cc533fa/raw/eb877e94074509d1c66ca4632b90f19aeea725f0/gistfile1.txt 
-    python3 main.py 
-else 
-    python3 app.py && python3 -m pykanha 
-fi
+if [ -f .env ] ; then  set -o allexport; source .env; set +o allexport ; fi
+if [ $SESSION1 ] ; then python3 multi_client.py ; else python3 -m pykanha ; fi
