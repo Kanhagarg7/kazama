@@ -107,9 +107,18 @@ class _BaseDatabase:
         return 1
 
 
+import os
+from dotenv import load_dotenv
+from pymongo import MongoClient
+
+load_dotenv()  # Load .env file
+
 class MongoDB(_BaseDatabase):
-    def __init__(self, key, dbname="kazamaDB"):
-        self.dB = MongoClient(key, serverSelectionTimeoutMS=5000)
+    def __init__(self, key=None):
+        dbname = os.getenv("DB_NAME", "kazamaDB")  # fallback if not set
+        mongo_uri = key or os.getenv("MONGO_URI")
+
+        self.dB = MongoClient(mongo_uri, serverSelectionTimeoutMS=5000)
         self.db = self.dB[dbname]
         super().__init__()
 
@@ -125,8 +134,7 @@ class MongoDB(_BaseDatabase):
         return self.db.command("dbstats")["dataSize"]
 
     def ping(self):
-        if self.dB.server_info():
-            return True
+        return bool(self.dB.server_info())
 
     def keys(self):
         return self.db.list_collection_names()
@@ -146,11 +154,11 @@ class MongoDB(_BaseDatabase):
             return x["value"]
 
     def flushall(self):
-        self.dB.drop_database("kanhaDB")
+        dbname = os.getenv("DB_NAME", "kazamaDB")
+        self.dB.drop_database(dbname)
         self._cache.clear()
         return True
-
-
+        
 # --------------------------------------------------------------------------------------------- #
 
 # Thanks to "Akash Pattnaik" / @BLUE-DEVIL1134
