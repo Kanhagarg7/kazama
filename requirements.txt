@@ -1,12 +1,9 @@
 telethon
+gitpython
+https://github.com/New-dev0/Telethon-Patch/archive/main.zip
 python-decouple
 python-dotenv
-aiohttp
-bs4
-enhancer>=0.3.4
-heroku3
-gitpython
-pypdf2>=1.26.0
-pytz
+telegraph
+enhancer
 requests
-tgcrypto
+aiohttp
