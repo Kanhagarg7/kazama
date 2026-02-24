@@ -1,8 +1,12 @@
 telethon
-gitpython
 python-decouple
 python-dotenv
-telegraph
-enhancer
-requests
 aiohttp
+bs4
+enhancer>=0.3.4
+heroku3
+gitpython
+pypdf2>=1.26.0
+pytz
+requests
+tgcrypto
